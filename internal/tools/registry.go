@@ -22,8 +22,9 @@ import (
 
 type ToolDef struct {
 	Function struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
+		Name        string           `json:"name"`
+		Description string           `json:"description"`
+		Parameters  *json.RawMessage `json:"parameters,omitempty"`
 	} `json:"function"`
 }
 

@@ -527,6 +527,7 @@ func (c *Client) doChatStream(ctx context.Context, messages []Message, systemPro
 	case "ollama":
 		oc := NewOllamaClient(c.cfg.BaseURL, c.cfg.Model)
 		oc.SetSafetyGuard(c.safetyGuard)
+		oc.SetTools(c.tools)
 		return oc.ChatStream(ctx, messages, systemPrompt), nil
 	default:
 		return c.doOpenAIStream(ctx, messages, systemPrompt)
@@ -761,6 +762,7 @@ func (c *Client) doChat(ctx context.Context, messages []Message, systemPrompt st
 	case "ollama":
 		oc := NewOllamaClient(c.cfg.BaseURL, c.cfg.Model)
 		oc.SetSafetyGuard(c.safetyGuard)
+		oc.SetTools(c.tools)
 		return oc.Complete(ctx, messages, systemPrompt)
 	default:
 		return c.doOpenAI(ctx, messages, systemPrompt)

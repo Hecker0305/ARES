@@ -351,245 +351,317 @@ func NewAgent(scanID, target string, llmClient llm.LLMClient) *Agent {
 		return tools.ToolResult{Output: result}
 	})
 
+	// Parameter schemas for core tools (JSON Schema format)
+	termExecParams := json.RawMessage(`{"type":"object","properties":{"tool":{"type":"string","description":"The tool/command to execute (e.g. nmap, curl, gobuster, nuclei, ffuf, dig)"},"args":{"type":"string","description":"Space-separated arguments and flags"},"target":{"type":"string","description":"Target host, IP, or URL"},"workdir":{"type":"string","description":"Working directory (optional)"},"timeout":{"type":"integer","description":"Timeout in seconds (default 120)"}},"required":["tool"]}`)
+	readParams := json.RawMessage(`{"type":"object","properties":{"path":{"type":"string","description":"Absolute path to the file to read"}},"required":["path"]}`)
+	writeParams := json.RawMessage(`{"type":"object","properties":{"path":{"type":"string","description":"Absolute path to write to"},"content":{"type":"string","description":"Content to write to the file"}},"required":["path","content"]}`)
+	memRecallParams := json.RawMessage(`{"type":"object","properties":{"query":{"type":"string","description":"Search query or target to recall memory for"},"vuln_type":{"type":"string","description":"Vulnerability type filter (e.g. sqli, xss, ssrf)"}},"required":[]}`)
+	webSearchParams := json.RawMessage(`{"type":"object","properties":{"query":{"type":"string","description":"Web search query"}},"required":["query"]}`)
+	webSearch2Params := json.RawMessage(`{"type":"object","properties":{"query":{"type":"string","description":"Web search query"},"engine":{"type":"string","description":"Search engine (google, duckduckgo)"}},"required":["query"]}`)
+	scopeCheckParams := json.RawMessage(`{"type":"object","properties":{"target":{"type":"string","description":"Host or URL to check against authorized scope"}},"required":["target"]}`)
+	cveSearchParams := json.RawMessage(`{"type":"object","properties":{"query":{"type":"string","description":"CVE search query (e.g. apache, nginx, CVE-2024-)"},"limit":{"type":"integer","description":"Maximum number of results (default 5)"}},"required":["query"]}`)
+	exploitSearchParams := json.RawMessage(`{"type":"object","properties":{"query":{"type":"string","description":"Exploit search query (e.g. Apache Struts, Wordpress)"},"limit":{"type":"integer","description":"Maximum number of results (default 5)"}},"required":["query"]}`)
+	finishParams := json.RawMessage(`{"type":"object","properties":{"summary":{"type":"string","description":"Summary of findings and scan results"}},"required":["summary"]}`)
+	reportVulnParams := json.RawMessage(`{"type":"object","properties":{"title":{"type":"string","description":"Vulnerability title"},"severity":{"type":"string","description":"Critical/High/Medium/Low/Info"},"endpoint":{"type":"string","description":"Vulnerable URL or endpoint"},"description":{"type":"string","description":"Detailed description of the vulnerability"},"impact":{"type":"string","description":"Business impact of exploitation"},"extraction_proof":{"type":"string","description":"Proof evidence from tool output"},"cvss_score":{"type":"number","description":"CVSS v3 score (0.0-10.0)"},"poc_code":{"type":"string","description":"Proof of concept code"}},"required":["title","endpoint"]}`)
+	slashCmdParams := json.RawMessage(`{"type":"object","properties":{"command":{"type":"string","description":"Slash command to execute (e.g. /recon, /hunt, /validate, /report)"}},"required":["command"]}`)
+	secOrderParams := json.RawMessage(`{"type":"object","properties":{"vuln_type":{"type":"string","description":"Vulnerability type (sqli, xss, ssrf, etc)"},"target_url":{"type":"string","description":"Target URL"},"param":{"type":"string","description":"Parameter name"},"payload":{"type":"string","description":"Injection payload"}},"required":[]}`)
+
 	// Build tool definitions so the LLM receives proper function definitions
 	toolDefs := []tools.ToolDef{
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
-		}{Name: "terminal_execute", Description: "Execute a shell command on the target system. Use this for running penetration testing tools like nmap, curl, gobuster, nuclei, etc. Returns the command output."}},
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
+		}{Name: "terminal_execute", Description: "Execute a shell command on the target system. Use this for running penetration testing tools like nmap, curl, gobuster, nuclei, etc. Returns the command output.", Parameters: &termExecParams}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
-		}{Name: "read", Description: "Read the contents of a file on the local filesystem. Path must be within the working directory or temp directory."}},
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
+		}{Name: "read", Description: "Read the contents of a file on the local filesystem. Path must be within the working directory or temp directory.", Parameters: &readParams}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
-		}{Name: "write", Description: "Write content to a file on the local filesystem. Path must be within the working directory."}},
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
+		}{Name: "write", Description: "Write content to a file on the local filesystem. Path must be within the working directory.", Parameters: &writeParams}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "read_skill", Description: "Load a skill playbook by name. Skills contain step-by-step methodology for specific vulnerability types."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "list_skills", Description: "List all available skill playbooks with their IDs and descriptions."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
-		}{Name: "memory_recall", Description: "Recall prior successful payloads and techniques for a given query and vulnerability type from persistent strategic memory."}},
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
+		}{Name: "memory_recall", Description: "Recall prior successful payloads and techniques for a given query and vulnerability type from persistent strategic memory.", Parameters: &memRecallParams}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
-		}{Name: "websearch", Description: "Search the web for information about a specific query. Useful for researching CVEs, exploits, and techniques."}},
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
+		}{Name: "websearch", Description: "Search the web for information about a specific query. Useful for researching CVEs, exploits, and techniques.", Parameters: &webSearchParams}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
-		}{Name: "web_search", Description: "Search the web using a configurable search engine. Specify query and optionally engine (google, duckduckgo)."}},
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
+		}{Name: "web_search", Description: "Search the web using a configurable search engine. Specify query and optionally engine (google, duckduckgo).", Parameters: &webSearch2Params}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
-		}{Name: "scope_check", Description: "Check whether a given host or endpoint is within the authorized scope of the penetration test."}},
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
+		}{Name: "scope_check", Description: "Check whether a given host or endpoint is within the authorized scope of the penetration test.", Parameters: &scopeCheckParams}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "agents_graph_run", Description: "Spawn a sub-agent to perform a specific task. Use for parallel reconnaissance or scanning."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "spawn_agent", Description: "Spawn a sub-agent to perform a specific task with given instructions."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "check_agent", Description: "Check the status and results of a previously spawned sub-agent."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "agents_graph_combine", Description: "Combine results from multiple sub-agents into a consolidated output."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "run_python", Description: "Execute a Python script for data processing, parsing, or custom tooling."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "check_python_packages", Description: "Check whether specific Python packages are installed."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "install_python_package", Description: "Install a Python package using pip."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
-		}{Name: "cve_search", Description: "Search the CVE database for vulnerabilities matching a query. Returns CVE IDs, descriptions, and CVSS scores."}},
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
+		}{Name: "cve_search", Description: "Search the CVE database for vulnerabilities matching a query. Returns CVE IDs, descriptions, and CVSS scores.", Parameters: &cveSearchParams}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
-		}{Name: "exploit_search", Description: "Search Exploit-DB for public exploits matching a query. Returns exploit titles, types, and URLs."}},
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
+		}{Name: "exploit_search", Description: "Search Exploit-DB for public exploits matching a query. Returns exploit titles, types, and URLs.", Parameters: &exploitSearchParams}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
-		}{Name: "finish", Description: "Call this to finalize the scan. IMPORTANT: You must run at least 5 iterations and execute real security tools (nmap, nuclei, curl, etc.) via terminal_execute before calling finish. Do NOT call finish immediately."}},
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
+		}{Name: "finish", Description: "Call this to finalize the scan. IMPORTANT: You must run at least 5 iterations and execute real security tools (nmap, nuclei, curl, etc.) via terminal_execute before calling finish. Do NOT call finish immediately.", Parameters: &finishParams}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
-		}{Name: "report_vulnerability", Description: "Report a potential vulnerability. REQUIRED: You MUST include extraction_proof or evidence_path from a REAL tool execution (terminal_execute). Do NOT report vulnerabilities without actual tool evidence. Unverified reports are marked as low confidence."}},
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
+		}{Name: "report_vulnerability", Description: "Report a potential vulnerability. REQUIRED: You MUST include extraction_proof or evidence_path from a REAL tool execution (terminal_execute). Do NOT report vulnerabilities without actual tool evidence. Unverified reports are marked as low confidence.", Parameters: &reportVulnParams}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
-		}{Name: "second_order_check", Description: "Perform a second-order check to see if a discovered vulnerability can be chained with another for greater impact."}},
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
+		}{Name: "second_order_check", Description: "Perform a second-order check to see if a discovered vulnerability can be chained with another for greater impact.", Parameters: &secOrderParams}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
-		}{Name: "slash_command", Description: "Execute a slash command (e.g., /recon, /hunt, /validate, /report). Use this to run specialized security workflows."}},
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
+		}{Name: "slash_command", Description: "Execute a slash command (e.g., /recon, /hunt, /validate, /report). Use this to run specialized security workflows.", Parameters: &slashCmdParams}},
 		// Red Team Killchain Tools
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_list_techniques", Description: "List all available red team techniques across the killchain. Optionally filter by phase (reconnaissance, initial_access, execution, persistence, privilege_escalation, defense_evasion, credential_access, discovery, lateral_movement, collection, command_and_control, exfiltration, impact)."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_evasion", Description: "Execute a defense evasion technique (amsi_patch, etw_patch, unhook_ntdll, unhook_mapping, unhook_all, detect_hooks, sandbox_check, certutil_download, mshta_exec, regsvr32_sct, rundll32_js, bitsadmin_dl, wmic_exec, wmic_xsl, powershell_iex, dotnet_assembly, memfd_exec). Use technique=name and params as a key-value map."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_list_evasion", Description: "List available defense evasion techniques. Optionally filter by category (e1_amsi, e2_etw, e3_unhook, e4_sandbox, e5_lolbin, e6_memory)."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_process_injection", Description: "Execute a process injection technique (create_remote_thread, nt_create_thread_ex, apc_injection, early_bird, thread_hijacking, process_hollowing, reflective_dll, local_injection, local_syscall, atom_bombing, gargoyle, indirect_syscall, ppid_spoof, module_stomp). Provide technique, target_pid, and payload."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_list_injection", Description: "List all available process injection techniques with their risk levels, Win32 APIs used, and detection signatures."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_kerberos", Description: "Execute a Kerberos/AD abuse technique (enumerate_domain, golden_ticket, silver_ticket, diamond_ticket, asrep_roast, kerberoast, find_unconstrained_deleg, find_constrained_deleg, find_rbcd, exploit_unconstrained_deleg, skeleton_key, dcsync_all, dcsync_user, overpass_hash, overpass_key, export_tickets, purge_tickets, pass_ticket, ms14_068, pac_modify, pac_validation_bypass). Provide technique, domain, and dc."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_list_kerberos", Description: "List all available Kerberos abuse techniques with required tools and privilege levels."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_persistence", Description: "Establish persistence using Windows techniques (startup_folder, appinit_dlls, appcert_dlls, ifeo_debugger, ifeo_globalflag, sticky_keys, sticky_keys_cmd, sticky_keys_all, dll_hijack, dll_sideload, com_hijack, time_provider, active_setup, bcdedit, chrome_extension, firefox_extension, office_addin)."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_privilege_escalation", Description: "Execute Windows privilege escalation techniques (rogue_potato, printspoof, juicy_potato, sweet_potato, uac_fodhelper, uac_computerdefaults, uac_silentcleanup, uac_eventviewer, uac_cmstpa, named_pipe_scm, find_unquoted_paths, exploit_unquoted_path, find_modifiable_services, always_install_elevated, exploit_always_install, kernel_cves, token_steal, find_weak_service_acls, find_modifiable_tasks)."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_lateral_movement", Description: "Execute lateral movement techniques (dcom_mmc20, dcom_shellwindows, psexec, psexec_paexec, wmi_wmic, wmi_cim, wmi_creds, winrm, winrm_session, rdp_shadow, remote_task, remote_service, sccm_client_push, file_copy_smb, file_copy_bits, dfs_coerce)."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_artifacts", Description: "Query the forensic artifact database. Filter by technique_id, killchain phase, or free-text search. Returns Windows Event IDs, Sysmon Event IDs, registry paths, file system artifacts, network indicators, and Sigma rule references for each technique."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_forensic_timeline", Description: "Add an entry to the forensic timeline. Provide source, event_type, description, and artifact path for chain-of-custody tracking."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_find_target", Description: "Find the process ID (PID) of a running target process by name. Useful before process injection to find the target process to inject into."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_ad_acl", Description: "Abuse Active Directory ACL/ACE permissions (force_change_password, add_user_to_group, modify_logon_script, write_owner_full_control, write_dacl_full_control, generic_write_shadow, enum_acls, find_dangerous_acls). PowerView-based AD privilege escalation."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_shadow_creds", Description: "Shadow Credentials attack via Whisker/pyWhisker (add_key_cred, shadow_tgt, export_cert, shadow_cleanup, computer_takeover). Abuses msDS-KeyCredentialLink for user/computer account takeover."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_adcs", Description: "Active Directory Certificate Services abuse (find_vuln_templates, esc1_request, esc1_convert_pfx, esc1_get_tgt, esc3_request, petitpotam_relay, manual_csr). ESC1-ESC3 attacks with Certify + Rubeus."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_extended_injection", Description: "Extended process injection techniques (fiber, fiber_remote, threadpool_wait, threadpool_work, threadpool_timer, doppelganging, doppelganging_disk, extra_window_mem, module_stomp_dll, module_stomp_specific, tp_direct_fiber)."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_extended_evasion", Description: "Extended defense evasion techniques (peb_masquerade_image, peb_masquerade_cmdline, peb_masquerade_both, peb_detect, direct_syscall, direct_syscall_alloc, direct_syscall_disk, syscall_detect_hooks, unhook_from_disk, unhook_from_known_dlls, unhook_specific_dlls, detect_hooked_funcs, amsi_variant1-6, etw_variant1-6, msbuild, installutil, regasm, presentationhost)."}},
 		// C2 Framework Tools
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_cobaltstrike", Description: "Cobalt Strike C2 operations (connect, disconnect, list_beacons, interact, execute, exec_assembly, exec_powershell, mimikatz, hashdump, logonpasswords, screenshot, keylogger, portscan, inject, spawn, upload, download, pth, make_token, steal_token, rev2self, ssh, link, unlink, browser_pivot, get_task_result, gen_beacon_exe, gen_beacon_dll, gen_beacon_ps1, gen_beacon_shellcode, gen_stager, gen_from_profile, start_externalc2, stop_externalc2, externalc2_heartbeat, exec_aggressor_cli, gen_aggressor, exec_aggressor_script, aggressor_alias, aggressor_listener)."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_mythic", Description: "Mythic C2 framework operations (login, login_apikey, logout, list_callbacks, interact, execute, submit_task, submit_direct, get_results, get_task_result, get_active_callbacks, kill_callback, download_file, upload_file, upload_to_callback, download_from_callback, list_payloads, generate_payload, gen_apollo, gen_poseidon, gen_athena, gen_merlin, list_commands, list_payload_types, screenshot, keylog, socks_start, socks_stop, port_forward, create_chain, execute_chain, search)."}},
 		// Vulnerability Scanning Tools
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_nessus", Description: "Nessus vulnerability scanner operations (login, login_apikey, logout, quick_scan, full_scan, custom_scan, create_scan, list_scans, get_scan, launch_scan, pause_scan, resume_scan, stop_scan, delete_scan, get_vulns, get_critical, export_scan, list_policies, list_folders)."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_openvas", Description: "OpenVAS/GVM vulnerability scanner operations (connect, quick_scan, full_scan, comprehensive_scan, scan_config, create_target, create_task, start_task, stop_task, delete_task, get_results, get_report, get_tasks, get_targets, get_nvts, get_configs, get_version, disconnect)."}},
 		// Password Cracking Tools
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_password_crack", Description: "Password cracking tools (tool=hydra: bruteforce, ssh, rdp, smb, ftp, mysql, mssql, ldap, parse; tool=john: crack, nt, netntlm, zip, rar, pdf, keepass, show, benchmark; tool=hashcat: crack, rules, bruteforce, ntlm, netntlm, bcrypt, md5, show, benchmark, identify; tool=hashid; tool=wordlist)."}},
 		// Packet Analysis Tools
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_packet_analysis", Description: "Network packet capture and analysis (capture_live, capture_filter, capture_offline, capture_http, capture_dns, capture_kerberos, capture_smb, analyze_pcap, analyze_protocols, analyze_http, analyze_dns, analyze_kerberos, analyze_smb, analyze_tls, analyze_conversations, analyze_endpoints, extract_creds, extract_files, detect_portscan, detect_dns_tunnel, detect_bruteforce, filter_pcap, merge_pcaps, split_pcap, craft_arp, craft_dns, craft_syn, craft_rst, craft_http, stop_capture)."}},
 		// Web Security Tools
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_websecurity", Description: "Web application security testing (sqli_basic/post/request/dump/os_shell/cookie/time/error/union/blind/detect, xss_reflected/stored/dom/polyglot/csp/detect, ssrf_basic/blind/redirect/metadata/detect, csrf_no_token/weak/referer/samesite/poc, ssti_detect/jinja2/twig/freemarker/pug, jwt_none/weak_secret/kid/jku/key_confusion/decode, graphql_introspect/inject/batch/depth/dup/detect, nosqli_detect/auth/extract/time, deser_php/java/pickle/ruby/node/detect, proto_client/server/detect, native_sqli/xss/ssrf/cmdi/path_traversal). Use native_* techniques for pure-Go detection without external tools."}},
 		// Binary Exploitation Tools
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_binaryexploit", Description: "Binary exploitation (stack_overflow_32/64/seh, fuzz, find_offset, cyclic, rop_chain/execve/gadgets/leak_libc, seh_overflow/find/safeseh/payload, ret2libc/64/find/aslr, fmt_leak/write/detect/exploit, deliver_tcp/udp/deliver). Use deliver/deliver_tcp to send crafted payloads to target host:port."}},
 		// Cloud Exploitation Tools
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_cloud", Description: "Cloud environment exploitation - AWS (users, roles, buckets, s3, ec2, iam, lambda, cloudformation, assume_role, pacu, metadata, ssm), Azure (login, vms, storage, keyvault, secrets, roles, users, groups, run_command, metadata), GCP (login, instances, buckets, iam, functions, kms, sql, sa, metadata, scout)."}},
 		// Reversing Tools
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_reversing", Description: "Reverse engineering (frida_spawn/attach/processes/usb/trace/hook/ssl_bypass/dump/gen_hook, pe_headers/sections/imports/exports/resources/symbols/entry/signature/dlls/analyze, kernel_kdnet/serial/debug/drivers/load/unload, ssdt_dump/hooks/index, idt_dump/hooks, syscall_lookup/table)."}},
 		// Phishing Tools
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_phishing", Description: "Phishing operations - GoPhish (users, groups, templates, pages, smtp, campaigns, import), Modlishka (config, start, stop, creds, tokens, clone, proxy, logs), OWA password spray (single, autodiscover, bruteforce, enumerate, lockout, wordlist, check), Office macro phishing (word/excel/powerpoint/dde/ole/onenote), HTTP/SMTP forwarders (http_forwarder, smtp_forwarder, dns_forwarder, http_redirector, reverse_proxy, ssh_tunnel, named_pipe_relay, stop_all)."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_bloodhound", Description: "BloodHound AD attack path analysis - Collect (collect_all, collect_method, collect_lm), Neo4j (neo4j_connect, neo4j_query, neo4j_clear, neo4j_nodes), Cypher queries (query_da, query_kerberoast, query_asrep, query_dcsync, query_unconstrained, query_constrained, query_all_paths, query_high_value)."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_empire", Description: "PowerShell Empire C2 framework - Auth (login, logout), Listeners (list_listeners, create_http, create_https, delete/start/stop_listener), Stagers (list_stagers, gen_dll, gen_launcher, gen_ps1, gen_macro), Agents (list/interact/rename/kill/remove_agent), Tasks (exec_shell, exec_powershell, exec_mimikatz, exec_portscan, list_modules)."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_spiderfoot", Description: "Spiderfoot OSINT scanner - CLI (scan_cli, scan_all, scan_type, scan_timeout), Web API (new_scan, scan_status, list/stop/delete_scan, scan_results, scan_results_type, scan_log, export_csv, export_json), Modules (list_modules, list_groups, describe_module, recommended)."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_exfiltration", Description: "Data exfiltration techniques - DNS (dns_powercloud, dns_nslookup, dns_dig, dns_tunnel, dns_encode), HTTP (http_post, http_put, http_header, http_cookies), ICMP (icmp_exfil, icmp_file), Other (smb_exfil, ftp_exfil, email_exfil, certutil_exfil, bits_exfil, split_exfil), Prep (encode_base64, encrypt, compress), Stealth (stealth_rate, stealth_jitter, stealth_schedule)."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_credential_access", Description: "Credential access techniques - CredUI (prompt_creds, prompt_store, prompt_network, prompt_check), Man-in-the-Browser (mitb_chrome_ext, mitb_chrome_dll, mitb_firefox, mitb_proxy, mitb_formgrab), Keylogging (keylog_win32, keylog_start/stop, keylog_poll, keylog_driver), Dumping (dump_chrome/firefox/ie_vault/rdcman/wifi/vault/credman/token), Detection (detect_keylog/credui/formgrab, clear_history)."}},
 		{Function: struct {
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Name        string           `json:"name"`
+			Description string           `json:"description"`
+			Parameters  *json.RawMessage `json:"parameters,omitempty"`
 		}{Name: "redteam_browser", Description: "Headless browser automation (screenshot, html, text, evaluate/js, click, fill_submit, cookies, set_cookie, detect_spa). Requires Chrome/Chromium installed. Used for JS-heavy apps, SPA interaction, DOM XSS detection, auth flows."}},
 	}
 	r.SetDefs(toolDefs)

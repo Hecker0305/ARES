@@ -27,6 +27,7 @@ type ollamaChatRequest struct {
 	Messages []ollamaChatMessage    `json:"messages"`
 	Stream   bool                   `json:"stream"`
 	Options  map[string]interface{} `json:"options,omitempty"`
+	Tools    []ollamaToolDef        `json:"tools,omitempty"`
 }
 
 // ollamaChatResponse is a single response from Ollama /api/chat (non-streaming)
@@ -43,6 +44,18 @@ type ollamaChatResponse struct {
 	EvalDuration int64 `json:"eval_duration,omitempty"`
 }
 
+// ollamaToolDef is a tool definition in the format Ollama's API expects.
+type ollamaToolDef struct {
+	Type     string          `json:"type"`
+	Function ollamaToolFunc  `json:"function"`
+}
+
+type ollamaToolFunc struct {
+	Name        string           `json:"name"`
+	Description string           `json:"description,omitempty"`
+	Parameters  *json.RawMessage `json:"parameters,omitempty"`
+}
+
 // OllamaClient is a dedicated Ollama client using the /api/chat endpoint.
 // It implements the LLMClient interface and provides proper chat-formatted requests
 // with streaming support via Ollama's native API (not the OpenAI-compatible endpoint).
@@ -54,6 +67,7 @@ type OllamaClient struct {
 	totalIn     int
 	totalOut    int
 	safetyGuard *safety.ScanSafetyGuard
+	tools       []any
 }
 
 func NewOllamaClient(baseURL, model string) *OllamaClient {
@@ -88,18 +102,63 @@ func (c *OllamaClient) buildChatMessages(messages []Message, systemPrompt string
 	return chatMsgs
 }
 
-func (c *OllamaClient) Complete(ctx context.Context, messages []Message, systemPrompt string) (string, error) {
-	chatMsgs := c.buildChatMessages(messages, systemPrompt)
-
-	body := ollamaChatRequest{
+// buildRequest constructs an ollamaChatRequest with optional tool definitions.
+func (c *OllamaClient) buildRequest(chatMsgs []ollamaChatMessage, stream bool) ollamaChatRequest {
+	req := ollamaChatRequest{
 		Model:    c.model,
 		Messages: chatMsgs,
-		Stream:   false,
+		Stream:   stream,
 		Options: map[string]interface{}{
 			"temperature": 0.1,
 			"num_predict": 4096,
 		},
 	}
+
+	c.mu.Lock()
+	tools := c.tools
+	c.mu.Unlock()
+
+	if len(tools) > 0 {
+		ollamaTools := make([]ollamaToolDef, 0, len(tools))
+		for _, t := range tools {
+			data, err := json.Marshal(t)
+			if err != nil {
+				continue
+			}
+			var td struct {
+				Function struct {
+					Name        string           `json:"name"`
+					Description string           `json:"description"`
+					Parameters  *json.RawMessage `json:"parameters,omitempty"`
+				} `json:"function"`
+			}
+			if err := json.Unmarshal(data, &td); err != nil {
+				continue
+			}
+			if td.Function.Name == "" {
+				continue
+			}
+			ollamaTools = append(ollamaTools, ollamaToolDef{
+				Type: "function",
+				Function: ollamaToolFunc{
+					Name:        td.Function.Name,
+					Description: td.Function.Description,
+					Parameters:  td.Function.Parameters,
+				},
+			})
+		}
+		if len(ollamaTools) > 0 {
+			req.Tools = ollamaTools
+		}
+	}
+
+	return req
+}
+
+func (c *OllamaClient) Complete(ctx context.Context, messages []Message, systemPrompt string) (string, error) {
+	chatMsgs := c.buildChatMessages(messages, systemPrompt)
+
+	body := c.buildRequest(chatMsgs, false)
 
 	payload, err := json.Marshal(body)
 	if err != nil {
@@ -140,15 +199,7 @@ func (c *OllamaClient) ChatStream(ctx context.Context, messages []Message, syste
 	ch := make(chan StreamChunk, 64)
 	chatMsgs := c.buildChatMessages(messages, systemPrompt)
 
-	body := ollamaChatRequest{
-		Model:    c.model,
-		Messages: chatMsgs,
-		Stream:   true,
-		Options: map[string]interface{}{
-			"temperature": 0.1,
-			"num_predict": 4096,
-		},
-	}
+	body := c.buildRequest(chatMsgs, true)
 
 	go func() {
 		defer close(ch)
@@ -254,7 +305,11 @@ func (c *OllamaClient) SetModel(model string) {
 	c.model = model
 }
 
-func (c *OllamaClient) SetTools(tools []any) {}
+func (c *OllamaClient) SetTools(tools []any) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.tools = tools
+}
 
 func (c *OllamaClient) GetTokens() (int, int, int) {
 	c.mu.Lock()
