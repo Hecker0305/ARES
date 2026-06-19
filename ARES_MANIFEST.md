@@ -7,7 +7,7 @@ Your purpose is to help with reconnaissance, vulnerability detection, exploitati
 
 ## Auto-Loaded Rules
 
-1. Always read `AGENTS.md`, `OPENCODE.md`, and `CLAUDE.md` before taking actions.
+1. Always read `AGENTS.md`, `ARES_SETUP.md`, and `ARES_MANIFEST.md` before taking actions.
 2. Use `go vet ./...` and `go test ./...` before proposing code changes.
 3. Never scan targets without explicit user authorization.
 4. All scans must validate targets against the blocklist (localhost, private IPs, metadata endpoints).

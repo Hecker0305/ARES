@@ -6,8 +6,8 @@ This guide covers setup and configuration for AI coding assistants: **OpenCode**
 
 ```
 ares/
-├── CLAUDE.md         # Claude Code manifest (auto-loaded)
-├── OPENCODE.md       # OpenCode installation guide
+├── ARES_MANIFEST.md  # Agent manifest (auto-loaded)
+├── ARES_SETUP.md     # Installation guide
 ├── AGENTS.md         # This file — multi-harness reference
 ├── skills/           # Agent skill definitions
 │   ├── sql_injection.skill
@@ -34,14 +34,14 @@ ares/
 ### OpenCode
 
 ```
-opencode . --config ares/OPENCODE.md
+opencode . --config ares/ARES_SETUP.md
 ```
 
-See `OPENCODE.md` for full details.
+See `ARES_SETUP.md` for full details.
 
 ### Claude Code
 
-Claude Code auto-loads `CLAUDE.md` when run from the `ares/` directory:
+Auto-loads `ARES_MANIFEST.md` when run from the `ares/` directory:
 
 ```
 cd ares

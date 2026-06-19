@@ -117,15 +117,15 @@ setup_agent_config() {
     case "$AGENT" in
         opencode)
             log_info "Setting up for OpenCode"
-            if [[ -f "$ARES_DIR/OPENCODE.md" ]]; then
-                cp "$ARES_DIR/OPENCODE.md" "$ARES_HOME/config/opencode.md"
+            if [[ -f "$ARES_DIR/ARES_SETUP.md" ]]; then
+                cp "$ARES_DIR/ARES_SETUP.md" "$ARES_HOME/config/opencode.md"
                 log_ok "OpenCode config copied"
             fi
             ;;
         claude)
             log_info "Setting up for Claude Code"
-            if [[ -f "$ARES_DIR/CLAUDE.md" ]]; then
-                cp "$ARES_DIR/CLAUDE.md" "$ARES_HOME/config/claude.md"
+            if [[ -f "$ARES_DIR/ARES_MANIFEST.md" ]]; then
+                cp "$ARES_DIR/ARES_MANIFEST.md" "$ARES_HOME/config/claude.md"
                 log_ok "Claude Code config copied"
             fi
             ;;
