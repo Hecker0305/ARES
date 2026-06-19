@@ -338,7 +338,7 @@ Commercial licensing available for embedding ARES in proprietary products. Conta
 
 Issues and PRs welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting.
 
-For vulnerability reports in ARES itself: security@armourmindinfotech.com
+For vulnerability reports in ARES itself: armourmindinfotech@gmail.com
 
 ---
 
