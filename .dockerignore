@@ -1,0 +1,71 @@
+# Version control
+.git/
+.github/
+
+# Build artifacts
+*.exe
+*.test
+*.out
+
+# Binaries
+ares
+ares.exe
+ares-linux*
+ares-darwin*
+
+# Node modules
+node_modules/
+frontend/node_modules/
+
+# Go
+vendor/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# State and data
+state/
+evidence/
+output/
+data/
+
+# Reports
+report*.txt
+report*.json
+report*.csv
+*.audit.jsonl
+
+# Config (sensitive)
+.ares.env
+.env
+*.env.local
+webhooks.json
+schedules.json
+tenants.json
+config.json
+admin_credentials.json
+
+# Coverage
+coverage.out
+
+# SBOM
+sbom.spdx.json
+
+# Terraform
+.terraform/
+*.tfstate
+
+# Generated proto
+proto/*.pb.go
+proto/*_grpc.pb.go
+
+# Documentation
+AUDIT_REPORT*.md
+CHANGES_APPLIED.md

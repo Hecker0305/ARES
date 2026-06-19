@@ -65,3 +65,7 @@ temp/
 # Artifacts
 *.bak.*
 *.tmp
+
+# Evidence / scan artifacts
+evidence/
+reports/
