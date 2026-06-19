@@ -1,23 +1,13 @@
+# ARES — Autonomous Reconnaissance & Exploitation System
 
-<div align="center">
-
-# ARES
-### Autonomous Reconnaissance & Exploitation System
-
-**An open source AI-driven web security scanner for pentesters and bug bounty hunters.**  
-Point it at a target. It handles the rest.
-
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Go Version](https://img.shields.io/badge/Go-1.26+-00ADD8.svg)](https://golang.org)
-[![Built by ArmourMind](https://img.shields.io/badge/Built%20by-ArmourMind-red.svg)](https://armourmind.com)
-
-</div>
+> An open source AI-driven web security scanner for pentesters and bug bounty hunters.  
+> Point it at a target. It handles the rest.
 
 ---
 
 ## What is ARES?
 
-ARES is an autonomous penetration testing engine built on an LLM agent loop. It performs a full security assessment pipeline ÃÂ¢ÃÂÃÂ recon, discovery, vulnerability scanning, exploitation, and reporting ÃÂ¢ÃÂÃÂ without manual intervention at each step.
+ARES is an autonomous penetration testing engine built on an LLM agent loop. It performs a full security assessment pipeline — recon, discovery, vulnerability scanning, exploitation, and reporting — without manual intervention at each step.
 
 The agent decides which tool to call next based on what it finds. It chains discoveries into attack paths, confirms vulnerabilities with proof before reporting them, and stops itself from looping on dead ends.
 
@@ -27,13 +17,13 @@ The agent decides which tool to call next based on what it finds. It chains disc
 
 ## Features
 
-- **Autonomous LLM agent loop** ÃÂ¢ÃÂÃÂ Recon ÃÂ¢ÃÂÃÂ Discovery ÃÂ¢ÃÂÃÂ VulnScan ÃÂ¢ÃÂÃÂ Exploit ÃÂ¢ÃÂÃÂ Report, fully automated
-- **Dual LLM architecture** ÃÂ¢ÃÂÃÂ Primary model for reasoning, attack model for payload generation
-- **Offline by default** ÃÂ¢ÃÂÃÂ Runs on Ollama (local models) with no API calls to external services
-- **DOM XSS via headless browser** ÃÂ¢ÃÂÃÂ Chromium-based detection, not just curl reflection checks
-- **Scope enforcement** ÃÂ¢ÃÂÃÂ Hard blocks on out-of-scope targets, RFC1918, cloud metadata endpoints
-- **OOB callback server** ÃÂ¢ÃÂÃÂ Built-in DNS/HTTP out-of-band listener for blind vulnerability detection
-- **SARIF + PDF report output** ÃÂ¢ÃÂÃÂ Machine-readable and human-readable reports from every scan
+- **Autonomous LLM agent loop** — Recon → Discovery → VulnScan → Exploit → Report, fully automated
+- **Dual LLM architecture** — Primary model for reasoning, attack model for payload generation
+- **Offline by default** — Runs on Ollama (local models) with no API calls to external services
+- **DOM XSS via headless browser** — Chromium-based detection, not just curl reflection checks
+- **Scope enforcement** — Hard blocks on out-of-scope targets, RFC1918, cloud metadata endpoints
+- **OOB callback server** — Built-in DNS/HTTP out-of-band listener for blind vulnerability detection
+- **SARIF + PDF report output** — Machine-readable and human-readable reports from every scan
 - **Vulnerability classes covered:**
   - SQL Injection (error-based, boolean, time-based, blind)
   - Cross-Site Scripting (reflected, stored, DOM)
@@ -53,11 +43,11 @@ The agent decides which tool to call next based on what it finds. It chains disc
 
 ## Model Requirements
 
-> ÃÂ¢ÃÂÃÂ ÃÂ¯ÃÂ¸ÃÂ **Tool calling support is REQUIRED.** The model must support native function/tool calling. Models without this capability cannot execute any tools ÃÂ¢ÃÂÃÂ making ARES completely non-functional.
+> ⚠️ **Tool calling support is REQUIRED.** The model must support native function/tool calling. Models without this capability cannot execute any tools — making ARES completely non-functional.
 
 ARES requires a model with reliable tool-calling and preferably extended thinking (`<think>` blocks). Model capabilities are auto-detected at startup via Ollama metadata.
 
-**Recommended minimum: 8B parameters.** Models below 8B are technically usable but strongly discouraged ÃÂ¢ÃÂÃÂ they frequently hallucinate tool output, invent CVEs, skip scope rules, and produce unreliable tool calls.
+**Recommended minimum: 8B parameters.** Models below 8B are technically usable but strongly discouraged — they frequently hallucinate tool output, invent CVEs, skip scope rules, and produce unreliable tool calls.
 
 ### Recommended Models (Ollama)
 
@@ -72,16 +62,16 @@ ARES requires a model with reliable tool-calling and preferably extended thinkin
 
 | Size | Reliability | Use Case |
 |---|---|---|
-| ÃÂ¢ÃÂÃÂ¥32B | High ÃÂ¢ÃÂÃÂ reliable for full recon pipelines | Production use, full autonomous scans |
-| 14BÃÂ¢ÃÂÃÂ32B | Good ÃÂ¢ÃÂÃÂ occasional tool call errors | Most users, standard engagements |
-| 8BÃÂ¢ÃÂÃÂ14B | Usable ÃÂ¢ÃÂÃÂ expect 20-40% tool call errors | Simple targets, limited scope |
-| <8B | Unreliable ÃÂ¢ÃÂÃÂ not recommended | Testing ARES setup only |
+| ≥32B | High — reliable for full recon pipelines | Production use, full autonomous scans |
+| 14B–32B | Good — occasional tool call errors | Most users, standard engagements |
+| 8B–14B | Usable — expect 20-40% tool call errors | Simple targets, limited scope |
+| <8B | Unreliable — not recommended | Testing ARES setup only |
 
 ### Known Model Issues
 
-- **DeepSeek R1** ÃÂ¢ÃÂÃÂ produces incomplete function calls, do not use
-- **Models < 8B** ÃÂ¢ÃÂÃÂ lack reliable tool calling support, will fail on complex targets
-- **High temperature (>0.3)** ÃÂ¢ÃÂÃÂ causes hallucination of tool output and CVEs, keep at 0.1ÃÂ¢ÃÂÃÂ0.2
+- **DeepSeek R1** — produces incomplete function calls, do not use
+- **Models < 8B** — lack reliable tool calling support, will fail on complex targets
+- **High temperature (>0.3)** — causes hallucination of tool output and CVEs, keep at 0.1–0.2
 
 ### Cloud API Alternative
 
@@ -115,8 +105,7 @@ Note: cloud providers receive the target URL and tool outputs. Use local Ollama 
 ### Install
 
 ```bash
-
-git clone https://github.com/Hecker0305/ARES-.git
+git clone https://github.com/Hecker0305/ares.git
 cd ares
 go build -o ares ./cmd/ares
 ```
@@ -124,8 +113,7 @@ go build -o ares ./cmd/ares
 Or install directly:
 
 ```bash
-
-go install github.com/Hecker0305/ARES-/cmd/ares@latest
+go install github.com/Hecker0305/ares/cmd/ares@latest
 ```
 
 ### Configure
@@ -153,7 +141,7 @@ ARES_LLM_API_KEY=
 # ARES_LLM_API_KEY=sk-ant-...
 # ARES_LLM_MODEL=claude-sonnet-4-6
 
-# Target (optional ÃÂ¢ÃÂÃÂ can pass via CLI)
+# Target (optional — can pass via CLI)
 ARES_TARGET=
 
 # OOB callback server for blind vuln detection
@@ -186,45 +174,45 @@ ARES_DASH_PORT=8080
 
 ```
 Target
-  ÃÂ¢ÃÂÃÂ
-  ÃÂ¢ÃÂÃÂ¼
-ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ           ARES Agent Loop               ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ                                         ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ  ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ   ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ            ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ  ÃÂ¢ÃÂÃÂ  LLM    ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ¶ÃÂ¢ÃÂÃÂ  Reason  ÃÂ¢ÃÂÃÂ            ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ  ÃÂ¢ÃÂÃÂ (Local) ÃÂ¢ÃÂÃÂ   ÃÂ¢ÃÂÃÂ + Decide ÃÂ¢ÃÂÃÂ            ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ  ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ   ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ¬ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ            ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ                     ÃÂ¢ÃÂÃÂ                  ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ              ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ¼ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ           ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ              ÃÂ¢ÃÂÃÂ Tool Kernel  ÃÂ¢ÃÂÃÂ           ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ              ÃÂ¢ÃÂÃÂ (allowlist + ÃÂ¢ÃÂÃÂ           ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ              ÃÂ¢ÃÂÃÂ  scope gate) ÃÂ¢ÃÂÃÂ           ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ              ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ¬ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ           ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ                     ÃÂ¢ÃÂÃÂ                  ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ    ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ¼ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ   ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ    ÃÂ¢ÃÂÃÂ         Tool Execution         ÃÂ¢ÃÂÃÂ   ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ    ÃÂ¢ÃÂÃÂ  nmap ÃÂ¢ÃÂÃÂ sqlmap ÃÂ¢ÃÂÃÂ nuclei ÃÂ¢ÃÂÃÂ curl ÃÂ¢ÃÂÃÂ   ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ    ÃÂ¢ÃÂÃÂ  chromedp ÃÂ¢ÃÂÃÂ subfinder ÃÂ¢ÃÂÃÂ httpx  ÃÂ¢ÃÂÃÂ   ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ    ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ¬ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ   ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ                     ÃÂ¢ÃÂÃÂ                  ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ              ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ¼ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ           ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ              ÃÂ¢ÃÂÃÂ   Results   ÃÂ¢ÃÂÃÂ           ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ              ÃÂ¢ÃÂÃÂ  ÃÂ¢ÃÂÃÂ History  ÃÂ¢ÃÂÃÂ           ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ              ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ           ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
-  ÃÂ¢ÃÂÃÂ
-  ÃÂ¢ÃÂÃÂ¼
+  │
+  ▼
+┌─────────────────────────────────────────┐
+│           ARES Agent Loop               │
+│                                         │
+│  ┌─────────┐   ┌──────────┐            │
+│  │  LLM    │──▶│  Reason  │            │
+│  │ (Local) │   │ + Decide │            │
+│  └─────────┘   └────┬─────┘            │
+│                     │                  │
+│              ┌──────▼──────┐           │
+│              │ Tool Kernel  │           │
+│              │ (allowlist + │           │
+│              │  scope gate) │           │
+│              └──────┬──────┘           │
+│                     │                  │
+│    ┌────────────────▼──────────────┐   │
+│    │         Tool Execution         │   │
+│    │  nmap │ sqlmap │ nuclei │ curl │   │
+│    │  chromedp │ subfinder │ httpx  │   │
+│    └────────────────┬──────────────┘   │
+│                     │                  │
+│              ┌──────▼──────┐           │
+│              │   Results   │           │
+│              │  → History  │           │
+│              └─────────────┘           │
+└─────────────────────────────────────────┘
+  │
+  ▼
 SARIF + PDF Report
 ```
 
 **Phase pipeline:**
 
-1. **Recon** ÃÂ¢ÃÂÃÂ DNS, WHOIS, subdomain enum, port scan, HTTP probing, tech fingerprinting
-2. **Discovery** ÃÂ¢ÃÂÃÂ Spider/crawl, directory bruteforce, JS analysis, API discovery, parameter discovery
-3. **VulnScan** ÃÂ¢ÃÂÃÂ Systematic testing across all vulnerability classes with proof-of-exploitability requirement
-4. **Exploit** ÃÂ¢ÃÂÃÂ Impact demonstration on confirmed findings
-5. **Report** ÃÂ¢ÃÂÃÂ SARIF export + branded PDF with findings, evidence, remediation roadmap
+1. **Recon** — DNS, WHOIS, subdomain enum, port scan, HTTP probing, tech fingerprinting
+2. **Discovery** — Spider/crawl, directory bruteforce, JS analysis, API discovery, parameter discovery
+3. **VulnScan** — Systematic testing across all vulnerability classes with proof-of-exploitability requirement
+4. **Exploit** — Impact demonstration on confirmed findings
+5. **Report** — SARIF export + branded PDF with findings, evidence, remediation roadmap
 
 ---
 
@@ -232,9 +220,9 @@ SARIF + PDF Report
 
 Every scan produces:
 
-**`report.sarif`** ÃÂ¢ÃÂÃÂ Machine-readable findings for CI/CD integration, Defect Dojo, GitHub Security tab
+**`report.sarif`** — Machine-readable findings for CI/CD integration, Defect Dojo, GitHub Security tab
 
-**`report.pdf`** ÃÂ¢ÃÂÃÂ Human-readable report with:
+**`report.pdf`** — Human-readable report with:
 - Executive summary and risk rating
 - Findings table with CVSS scores
 - Detailed findings with PoC, impact, remediation
@@ -274,7 +262,7 @@ ARES enforces scope before every tool execution. The following are always blocke
 - `.local` and `.internal` domains
 - Link-local addresses
 
-Scope is checked at the execution layer, not just advisory ÃÂ¢ÃÂÃÂ the agent cannot bypass it.
+Scope is checked at the execution layer, not just advisory — the agent cannot bypass it.
 
 ---
 
@@ -299,7 +287,7 @@ pip install sqlmap
 apt install nmap -y  # or brew install nmap
 ```
 
-ARES runs without any of these ÃÂ¢ÃÂÃÂ it will skip tools that aren't installed and note them in the scan log.
+ARES runs without any of these — it will skip tools that aren't installed and note them in the scan log.
 
 ---
 
@@ -307,28 +295,26 @@ ARES runs without any of these ÃÂ¢ÃÂÃÂ it will skip tools that 
 
 The open source version covers web application security scanning.
 
-
-**[ArmourMind Enterprise](https://armourmind.com)** adds:
+**[ArmourMind Infotech Enterprise](https://armourmindinfotech.com)** adds:
 
 | Feature | Open Source | Enterprise |
 |---|---|---|
-| Web vuln scanning | ÃÂ¢ÃÂÃÂ | ÃÂ¢ÃÂÃÂ |
-| Autonomous agent loop | ÃÂ¢ÃÂÃÂ | ÃÂ¢ÃÂÃÂ |
-| Offline / local LLM | ÃÂ¢ÃÂÃÂ | ÃÂ¢ÃÂÃÂ |
-| SARIF + PDF reports | ÃÂ¢ÃÂÃÂ | ÃÂ¢ÃÂÃÂ |
-| Continuous monitoring | ÃÂ¢ÃÂÃÂ | ÃÂ¢ÃÂÃÂ |
-| Authenticated scanning | ÃÂ¢ÃÂÃÂ | ÃÂ¢ÃÂÃÂ |
-| AD / Kerberos simulation | ÃÂ¢ÃÂÃÂ | ÃÂ¢ÃÂÃÂ |
-| Multi-target campaigns | ÃÂ¢ÃÂÃÂ | ÃÂ¢ÃÂÃÂ |
-| SIEM integration | ÃÂ¢ÃÂÃÂ | ÃÂ¢ÃÂÃÂ |
-| Compliance reporting | ÃÂ¢ÃÂÃÂ | ÃÂ¢ÃÂÃÂ |
-| Remediation verification | ÃÂ¢ÃÂÃÂ | ÃÂ¢ÃÂÃÂ |
-| Multi-user dashboard | ÃÂ¢ÃÂÃÂ | ÃÂ¢ÃÂÃÂ |
-| On-premise deployment | ÃÂ¢ÃÂÃÂ | ÃÂ¢ÃÂÃÂ |
+| Web vuln scanning | ✅ | ✅ |
+| Autonomous agent loop | ✅ | ✅ |
+| Offline / local LLM | ✅ | ✅ |
+| SARIF + PDF reports | ✅ | ✅ |
+| Continuous monitoring | ❌ | ✅ |
+| Authenticated scanning | ❌ | ✅ |
+| AD / Kerberos simulation | ❌ | ✅ |
+| Multi-target campaigns | ❌ | ✅ |
+| SIEM integration | ❌ | ✅ |
+| Compliance reporting | ❌ | ✅ |
+| Remediation verification | ❌ | ✅ |
+| Multi-user dashboard | ❌ | ✅ |
+| On-premise deployment | ❌ | ✅ |
 | Support SLA | Community | Dedicated |
 
-
-ÃÂ¢ÃÂÃÂ **[armourmindinfotech.com](https://armourmindinfotech.com)**
+→ **[armourmindinfotech.com](https://armourmindinfotech.com)**
 
 ---
 
@@ -342,8 +328,7 @@ Users are responsible for ensuring they have proper authorization before running
 
 ## License
 
-GNU Affero General Public License v3.0 ÃÂ¢ÃÂÃÂ see [LICENSE](LICENSE)
-
+GNU Affero General Public License v3.0 — see [LICENSE](LICENSE)
 
 Commercial licensing available for embedding ARES in proprietary products. Contact [armourmindinfotech.com](https://armourmindinfotech.com).
 
@@ -353,12 +338,10 @@ Commercial licensing available for embedding ARES in proprietary products. Conta
 
 Issues and PRs welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting.
 
-
 For vulnerability reports in ARES itself: armourmindinfotech@gmail.com
 
 ---
 
 <div align="center">
-
 Built by <a href="https://armourmindinfotech.com">ArmourMind Infotech</a>
 </div>
