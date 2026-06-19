@@ -1,0 +1,25 @@
+# title: Web Application Reconnaissance
+# phase: recon
+# author: ARES Team
+# version: 1.0
+# category: web-recon
+
+# Web Application Reconnaissance Skill
+  
+This skill performs comprehensive reconnaissance of web applications.
+  
+## Usage
+Use this skill to gather information about target web applications including:
+- Technology stack identification
+- Subdomain enumeration
+- Port scanning
+- Directory discovery
+- WAF detection
+  
+## Example
+```
+run web_recon --target example.com --ports common --recursive
+```
+  
+## Notes
+Always ensure you have proper authorization before scanning.

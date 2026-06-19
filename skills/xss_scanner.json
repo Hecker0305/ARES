@@ -1,0 +1,12 @@
+{
+  "id": "xss_scanner",
+  "title": "Cross-Site Scripting Scanner",
+  "phase": "testing",
+  "content": "# Cross-Site Scripting Scanner\n\nThis skill identifies XSS vulnerabilities in web applications.\n\n## Features\n- DOM-based XSS detection\n- Reflected XSS detection\n- Stored XSS detection\n- Context-aware payload generation\n\n## Usage\n```\nrun xss_scanner --url \"http://example.com/search\" --method GET\n```\n\n## Notes\nUse only on authorized targets.",
+  "metadata": {
+    "author": "ARES Team",
+    "version": "1.2",
+    "category": "web-security",
+    "severity": "high"
+  }
+}

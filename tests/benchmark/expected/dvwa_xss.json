@@ -1,0 +1,22 @@
+[
+  {
+    "type": "reflected_xss",
+    "endpoint": "/vulnerabilities/xss_r/",
+    "param": "name",
+    "method": "GET",
+    "severity": "High",
+    "cwe": "CWE-79",
+    "min_confidence": 0.7,
+    "evidence_pattern": "<script>alert"
+  },
+  {
+    "type": "stored_xss",
+    "endpoint": "/vulnerabilities/xss_s/",
+    "param": "txtName",
+    "method": "POST",
+    "severity": "Critical",
+    "cwe": "CWE-79",
+    "min_confidence": 0.7,
+    "evidence_pattern": "<script>alert"
+  }
+]

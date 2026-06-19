@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARES Engine - Enterprise Security Platform</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-brand">
+    <span class="logo-icon">⚡</span>
+    <span class="logo-text">ARES ENGINE</span>
+    <span class="badge">Enterprise</span>
+  </div>
+  <div class="nav-links">
+    <button class="nav-btn active" data-tab="dashboard">Dashboard</button>
+    <button class="nav-btn" data-tab="findings">Findings</button>
+    <button class="nav-btn" data-tab="reports">Reports</button>
+    <button class="nav-btn" data-tab="settings">Settings</button>
+  </div>
+  <div class="nav-user">
+    <span id="user-info">Loading...</span>
+    <button id="logout-btn" class="btn-small">Logout</button>
+  </div>
+</nav>
+
+<main class="container">
+  <section id="dashboard-tab" class="tab-content active">
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-value" id="stat-active">0</div>
+        <div class="stat-label">Active Scans</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-findings">0</div>
+        <div class="stat-label">Total Findings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-critical">0</div>
+        <div class="stat-label critical">Critical</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-high">0</div>
+        <div class="stat-label high">High</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Active Scans</h2>
+        <button id="new-scan-btn" class="btn-primary">+ New Scan</button>
+      </div>
+      <div id="scans-list" class="scans-list">
+        <div class="empty-state">No active scans. Start a new scan to begin.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Real-time Event Feed</h2>
+        <span class="live-indicator">● LIVE</span>
+      </div>
+      <div id="event-feed" class="event-feed">
+        <div class="empty-state">Waiting for events...</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="findings-tab" class="tab-content">
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Security Findings</h2>
+        <div class="filters">
+          <select id="filter-severity">
+            <option value="">All Severities</option>
+            <option value="critical">Critical</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+          <select id="filter-type">
+            <option value="">All Types</option>
+            <option value="sql_injection">SQL Injection</option>
+            <option value="xss">XSS</option>
+            <option value="csrf">CSRF</option>
+            <option value="ssrf">SSRF</option>
+            <option value="idor">IDOR</option>
+            <option value="rce">RCE</option>
+          </select>
+        </div>
+      </div>
+      <div id="findings-list" class="findings-list">
+        <div class="empty-state">No findings yet. Run a scan to detect vulnerabilities.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="reports-tab" class="tab-content">
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Generate Reports</h2>
+      </div>
+      <div class="report-form">
+        <div class="form-row">
+          <label>Scan ID</label>
+          <select id="report-scan-id">
+            <option value="">Select a scan</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Format</label>
+          <select id="report-format">
+            <option value="json">JSON</option>
+            <option value="markdown">Markdown</option>
+            <option value="html">HTML</option>
+            <option value="text">Text</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>
+            <input type="checkbox" id="report-mitre"> Include MITRE ATT&CK Mapping
+          </label>
+        </div>
+        <div class="form-row">
+          <label>Compliance</label>
+          <div class="checkbox-group">
+            <label><input type="checkbox" value="SOC2"> SOC2</label>
+            <label><input type="checkbox" value="ISO27001"> ISO 27001</label>
+            <label><input type="checkbox" value="PCI-DSS"> PCI-DSS</label>
+            <label><input type="checkbox" value="HIPAA"> HIPAA</label>
+          </div>
+        </div>
+        <button id="generate-report-btn" class="btn-primary">Generate Report</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Generated Reports</h2>
+      </div>
+      <div id="reports-list" class="reports-list">
+        <div class="empty-state">No reports generated yet.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="settings-tab" class="tab-content">
+    <div class="panel">
+      <div class="panel-header">
+        <h2>System Settings</h2>
+      </div>
+      <div class="settings-form">
+        <div class="form-row">
+          <label>Rate Limit (req/min)</label>
+          <input type="number" id="setting-rate-limit" value="60">
+        </div>
+        <div class="form-row">
+          <label>Session Timeout (hours)</label>
+          <input type="number" id="setting-session-timeout" value="24">
+        </div>
+<div class="form-row">
+           <label>CORS Origins (comma-separated)</label>
+           <input type="text" id="setting-cors" placeholder="https://your-domain.com">
+         </div>
+        <button id="save-settings-btn" class="btn-primary">Save Settings</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <h2>User Management</h2>
+        <button id="new-user-btn" class="btn-secondary">+ Add User</button>
+      </div>
+      <div id="users-list" class="users-list">
+        <div class="empty-state">Loading users...</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <span class="modal-close">&times;</span>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

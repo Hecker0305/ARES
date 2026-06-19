@@ -1,0 +1,22 @@
+[
+  {
+    "type": "sql_injection",
+    "endpoint": "/vulnerabilities/sqli/",
+    "param": "id",
+    "method": "GET",
+    "severity": "Critical",
+    "cwe": "CWE-89",
+    "min_confidence": 0.8,
+    "evidence_pattern": "Mysql|SQL syntax|You have an error"
+  },
+  {
+    "type": "sql_injection_blind",
+    "endpoint": "/vulnerabilities/sqli_blind/",
+    "param": "id",
+    "method": "GET",
+    "severity": "High",
+    "cwe": "CWE-89",
+    "min_confidence": 0.6,
+    "evidence_pattern": "User ID exists|User ID is MISSING"
+  }
+]

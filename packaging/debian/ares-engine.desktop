@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Ares Engine
+GenericName=Security Scanner
+Comment=AI-Powered Penetration Testing & Vulnerability Scanning Platform
+Exec=/opt/ares-engine/ares-engine-launcher.sh
+Icon=ares-engine
+Terminal=false
+Categories=Security;Network;Development;Utility;
+Keywords=security;scanning;pentest;vulnerability;
+StartupNotify=true
+MimeType=

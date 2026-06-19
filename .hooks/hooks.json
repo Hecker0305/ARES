@@ -1,0 +1,108 @@
+{
+  "version": "1.0.0",
+  "hooks": {
+    "pre-commit": {
+      "enabled": true,
+      "description": "Validate code quality before commits",
+      "checks": [
+        {
+          "name": "go-vet",
+          "command": "go vet ./...",
+          "workdir": ".",
+          "fail_on_error": true,
+          "description": "Run go vet to check for suspicious constructs"
+        },
+        {
+          "name": "skill-validation",
+          "command": "validate-skills",
+          "files": ["skills/*.skill", "skills/*.json"],
+          "fail_on_error": true,
+          "description": "Validate skill file syntax and structure"
+        },
+        {
+          "name": "format-json",
+          "command": "python3 -m json.tool",
+          "files": ["**/*.json"],
+          "fail_on_error": false,
+          "description": "Validate JSON formatting"
+        },
+        {
+          "name": "go-fmt",
+          "command": "test -z $(gofmt -l .)",
+          "workdir": ".",
+          "fail_on_error": false,
+          "description": "Check Go code formatting"
+        },
+        {
+          "name": "tidy-check",
+          "command": "go mod tidy && git diff --exit-code go.mod go.sum",
+          "workdir": ".",
+          "fail_on_error": false,
+          "description": "Ensure go.mod/go.sum are tidy"
+        }
+      ]
+    },
+    "post-merge": {
+      "enabled": true,
+      "description": "Update dependencies after merge",
+      "hooks": [
+        {
+          "name": "go-mod-tidy",
+          "command": "go mod tidy",
+          "workdir": ".",
+          "description": "Tidy Go module dependencies"
+        },
+        {
+          "name": "nuclei-template-update",
+          "command": "nuclei -update-templates",
+          "fail_on_error": false,
+          "description": "Update nuclei scanning templates"
+        },
+        {
+          "name": "reindex-skills",
+          "command": "touch skills/.index",
+          "description": "Trigger skill reindexing"
+        }
+      ]
+    },
+    "pre-push": {
+      "enabled": true,
+      "description": "Run comprehensive checks before push",
+      "checks": [
+        {
+          "name": "go-test",
+          "command": "go test ./... -count=1",
+          "workdir": ".",
+          "timeout": 300,
+          "fail_on_error": true,
+          "description": "Run all Go tests"
+        },
+        {
+          "name": "go-vet-all",
+          "command": "go vet ./...",
+          "workdir": ".",
+          "fail_on_error": true,
+          "description": "Run go vet on all packages"
+        },
+        {
+          "name": "build-check",
+          "command": "make build",
+          "workdir": ".",
+          "timeout": 120,
+          "fail_on_error": true,
+          "description": "Verify engine builds successfully"
+        }
+      ]
+    },
+    "post-checkout": {
+      "enabled": false,
+      "description": "Post-checkout hooks",
+      "hooks": []
+    }
+  },
+  "settings": {
+    "timeout_seconds": 60,
+    "skip_on_env": ["CI", "GITHUB_ACTIONS"],
+    "notify_on_fail": true
+  }
+}

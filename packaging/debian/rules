@@ -1,0 +1,41 @@
+#!/usr/bin/make -f
+
+export DH_VERBOSE = 1
+
+export GOFLAGS = -mod=mod
+export CGO_ENABLED = 0
+
+%:
+	dh $@
+
+override_dh_auto_clean:
+	rm -rf frontend/dist internal/webserver/frontend/dist
+	rm -rf packaging/ares/usr/share/ares-engine/*
+	dh_auto_clean
+
+override_dh_auto_build:
+	# Build frontend
+	cd frontend && npm ci && npm run build
+	# Copy dist to embed location
+	mkdir -p internal/webserver/frontend/dist
+	cp -r frontend/dist/* internal/webserver/frontend/dist/
+	# Build Go binary (static, stripped)
+	CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o packaging/ares/usr/share/ares-engine/ares ./cmd/ares
+
+override_dh_auto_test:
+	# Skip tests for package build
+
+override_dh_auto_install:
+	# Copy binary
+	cp packaging/ares/usr/share/ares-engine/ares packaging/ares/usr/bin/ares-engine
+	# Copy systemd service
+	cp packaging/debian/ares-engine.service packaging/ares/lib/systemd/system/
+	# Copy desktop entry
+	cp packaging/debian/ares-engine.desktop packaging/ares/usr/share/applications/
+	# Copy icon
+	cp assets/logo.png packaging/ares/usr/share/icons/hicolor/256x256/apps/ares-engine.png || true
+	# Copy default config
+	cp .ares.env.example packaging/ares/etc/ares-engine/ares.env || true
+
+override_dh_install:
+	dh_install --list-missing

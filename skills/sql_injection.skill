@@ -1,0 +1,25 @@
+# title: SQL Injection Detection
+# phase: testing
+# author: ARES Team
+# version: 1.1
+# category: web-security
+# severity: high
+
+# SQL Injection Detection Skill
+  
+This skill detects SQL injection vulnerabilities in web applications.
+  
+## Techniques Tested
+- Union-based SQL injection
+- Boolean-based blind SQL injection
+- Time-based blind SQL injection
+- Error-based SQL injection
+- Stacked queries
+  
+## Usage
+```
+run sql_injection --url "http://example.com/page.php?id=1"
+```
+  
+## Notes
+This skill should only be used on authorized targets.

@@ -1,0 +1,32 @@
+Source: ares-engine
+Section: security
+Priority: optional
+Maintainer: Ares Security <support@ares-security.io>
+Build-Depends: debhelper (>= 13), golang-go (>= 2:1.25), nodejs (>= 20), npm, make, git, ca-certificates
+Standards-Version: 4.6.2
+Homepage: https://ares-security.io
+Vcs-Browser: https://github.com/ares/ares-engine
+Vcs-Git: https://github.com/ares/ares-engine.git
+Rules-Requires-Root: no
+
+Package: ares-engine
+Architecture: amd64
+Depends: ${shlibs:Depends}, ${misc:Depends},
+         ca-certificates,
+         xdg-utils,
+         libc6 (>= 2.31)
+Recommends: chromium | firefox | x-www-browser
+Description: Ares Engine — AI-Powered Security Scanning Platform
+ Ares Engine is an AI-driven penetration testing and vulnerability
+ scanning platform. It combines automated reconnaissance, dynamic
+ analysis, and LLM-powered agent orchestration to discover and
+ validate security weaknesses in web applications and APIs.
+ .
+ Features:
+  * AI-powered scanning with multi-phase methodology
+  * 22 specialized scan phases (recon to exploit verification)
+  * Automated vulnerability discovery and verification
+  * Real-time WebSocket-based live feed
+  * Comprehensive reporting and compliance mapping
+  * Purple team simulation and validation loops
+  * Web-based GUI dashboard

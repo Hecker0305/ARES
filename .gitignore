@@ -1,0 +1,67 @@
+# Build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+ares
+ares-server
+ares-new
+
+# Logs
+*.log
+
+# Environment
+.env
+.ares.env
+*.env.local
+.env.example
+
+# Reports
+report*
+*.audit.jsonl
+
+# Encryption
+.ares/
+encryption.key
+
+# State data
+state/
+data/
+output/
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Go
+coverage.out
+coverage.html
+*.prof
+*.pprof
+vendor/
+
+# Node / Frontend
+node_modules/
+
+# Temp
+tmp/
+temp/
+.cache/
+
+# Artifacts
+*.bak.*
+*.tmp

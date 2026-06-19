@@ -1,0 +1,35 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    configure)
+        # Create runtime directories
+        mkdir -p /var/lib/ares-engine/data
+        mkdir -p /var/lib/ares-engine/reports
+        mkdir -p /var/lib/ares-engine/state
+        mkdir -p /var/lib/ares-engine/evidence
+
+        # Copy default config if not exists
+        if [ ! -f /etc/ares-engine/ares.env ]; then
+            cp /usr/share/ares-engine/ares.env.example /etc/ares-engine/ares.env 2>/dev/null || true
+        fi
+
+        # Reload systemd
+        if command -v systemctl >/dev/null 2>&1; then
+            systemctl daemon-reload >/dev/null 2>&1 || true
+        fi
+        ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+        ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+        ;;
+esac
+
+# dh_installdeb will replace this with shell code automatically
+# for generated maint scripts
+
+exit 0

@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  ares:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      ARES_API_KEY: "${ARES_API_KEY:-change-me}"
+      ARES_LLM_PROVIDER: "${ARES_LLM_PROVIDER:-openai}"
+      ARES_LLM_API_KEY: "${ARES_LLM_API_KEY:?Set ARES_LLM_API_KEY}"
+      ARES_LLM_MODEL: "${ARES_LLM_MODEL:-gpt-4o}"
+      ARES_REDIS_URL: "redis://redis:6379"
+      ARES_DB_URL: "postgres://ares:ares@postgres:5432/ares?sslmode=disable"
+      ARES_OUTPUT_DIR: "/data/output"
+      ARES_CHECKPOINT_DIR: "/data/checkpoints"
+      ARES_SKIP_OWNERSHIP_CHECK: "${ARES_SKIP_OWNERSHIP_CHECK:-true}"
+    volumes:
+      - ares_data:/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ares
+      POSTGRES_PASSWORD: ares
+      POSTGRES_DB: ares
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ares"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  ares_data:
+  postgres_data:
+  redis_data:
